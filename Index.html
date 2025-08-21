@@ -1,31 +1,200 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-"http://www.w3.org/TR/html4/loose.dtd">
-<html><head><title></title>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Huetanet.Tv - Estilo Netflix</title>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<style>
+body { margin:0; font-family: Arial, sans-serif; background:#0d0d0d; color:#fff; }
+header { position:sticky; top:0; background:#111; color:#fff; padding:15px 20px; display:flex; justify-content:space-between; align-items:center; z-index:100; }
+header h1 { margin:0; font-size:1.5rem; color:#ff4747; }
+nav a { color:#ddd; margin:0 10px; text-decoration:none; }
+nav a:hover { color:#fff; }
+.hero { padding:60px 20px; text-align:center; background:linear-gradient(to right, #ff4747, #ff6f61); color:#fff; }
+.hero h2 { font-size:2rem; margin-bottom:10px; }
+.hero p { font-size:1rem; color:#f1f1f1; }
+.section { max-width:1200px; margin:40px auto; padding:0 20px; }
+.section h3 { margin-bottom:15px; color:#ff4747; }
+.carousel-wrapper { position:relative; display:flex; align-items:center; margin-bottom:30px; }
+.carousel-row { display:flex; overflow-x:auto; gap:10px; padding:10px 0; scroll-behavior:smooth; scrollbar-width:none; }
+.carousel-row::-webkit-scrollbar { display:none; }
+.carousel-item { min-width:200px; background:#222; border-radius:8px; overflow:hidden; text-align:center; cursor:pointer; transition:transform 0.3s; flex-shrink:0; position:relative; }
+.carousel-item img { width:100%; height:120px; object-fit:cover; border-bottom:2px solid #444; }
+.carousel-item:hover { transform:scale(1.08); }
+.carousel-item p { margin:5px; font-size:0.9rem; color:#ddd; }
+.nav-btn { background:rgba(0,0,0,0.5); border:none; color:#fff; font-size:2rem; cursor:pointer; padding:10px; border-radius:50%; z-index:2; transition:background 0.3s; }
+.nav-btn:hover { background:rgba(255,255,255,0.2); }
+.nav-btn.left { position:absolute; left:0; }
+.nav-btn.right { position:absolute; right:0; }
+.preview { position:absolute; top:0; left:0; width:100%; height:100%; display:flex; justify-content:center; align-items:center; background:rgba(0,0,0,0.5); opacity:0; transition:opacity 0.3s; flex-direction:column; color:#fff; font-size:0.85rem; padding:5px; }
+.carousel-item:hover .preview { opacity:1; }
+video.mini { width:100%; height:100%; object-fit:cover; border-radius:0; }
+@media (max-width:768px) {
+    .nav-btn { display:none; }
+}
+</style>
 </head>
 <body>
-<div style="page-break-before:always; page-break-after:always"><div>
-</div></div>
-<div style="page-break-before:always; page-break-after:always"><div>
-</div></div>
-<div style="page-break-before:always; page-break-after:always"><div>
-</div></div>
-<div style="page-break-before:always; page-break-after:always"><div>
-</div></div>
-<div style="page-break-before:always; page-break-after:always"><div>
-</div></div>
-<div style="page-break-before:always; page-break-after:always"><div>
-</div></div>
-<div style="page-break-before:always; page-break-after:always"><div>
-</div></div>
-<div style="page-break-before:always; page-break-after:always"><div>
-</div></div>
-<div style="page-break-before:always; page-break-after:always"><div>
-</div></div>
-<div style="page-break-before:always; page-break-after:always"><div>
-</div></div>
-<div style="page-break-before:always; page-break-after:always"><div>
-</div></div>
-<div style="page-break-before:always; page-break-after:always"><div>
-</div></div>
-</body></html>
+<header>
+<h1>Huetanet.Tv</h1>
+<nav>
+<a href="#player">Reproductor</a>
+<a href="#channels">Canales</a>
+<a href="#contact">Contacto</a>
+</nav>
+</header>
+
+<section class="hero">
+<h2>Streaming sin límites</h2>
+<p>Disfruta de tus canales favoritos y contenido exclusivo en Huetanet.Tv</p>
+</section>
+
+<section id="player" class="section">
+<h3>Reproductor principal</h3>
+<div class="video-player">
+<video id="video" controls poster="https://via.placeholder.com/800x450.png?text=Huetanet.Tv" style="width:100%; border-radius:10px;"></video>
+</div>
+</section>
+
+<section id="netflix-menu" class="section" style="background:#111; padding:30px 10px;">
+<h3 style="color:#fff; margin-bottom:15px;">Explora Huetanet.Tv</h3>
+
+<!-- 🔎 Buscador -->
+<input type="text" id="search" placeholder="Buscar canal..." 
+       style="width:100%; max-width:400px; padding:10px; border-radius:5px; border:none; margin-bottom:20px;">
+
+<div id="channel-rows"></div>
+</section>
+
+<section id="contact" class="section">
+<h3>Contacto</h3>
+<p>¿Tienes dudas o quieres anunciarte en Huetanet.Tv? Escríbenos a <a href="mailto:contacto@huetanet.tv" style="color:#ff4747;">contacto@huetanet.tv</a></p>
+</section>
+
+<footer>
+© <script>document.write(new Date().getFullYear())</script> Huetanet.Tv - Todos los derechos reservados
+</footer>
+
+<script>
+let allChannels = []; // 🔹 global
+let hls; // instancia global de Hls.js
+
+async function loadM3U() {
+    const url = "https://raw.githubusercontent.com/AAAAAEXQOSyIpN2JZ0ehUQ/iPTV-FREE-LIST/master/iPTV-Free-List_TV.m3u";
+    const response = await fetch(url);
+    const text = await response.text();
+
+    const lines = text.split("\n");
+    let channels = [];
+    let current = {};
+
+    lines.forEach(line => {
+        if (line.startsWith("#EXTINF:")) {
+            const info = line.split(",");
+            current.name = info[1]?.trim() || "Canal Desconocido";
+            const logoMatch = line.match(/tvg-logo="(.*?)"/);
+            current.logo = logoMatch ? logoMatch[1] : "https://via.placeholder.com/300x169.png?text=Huetanet.Tv";
+            const groupMatch = line.match(/group-title="(.*?)"/);
+            current.group = groupMatch ? groupMatch[1] : "Otros";
+        } else if (line.startsWith("http")) {
+            current.url = line.trim();
+            channels.push({...current});
+            current = {};
+        }
+    });
+
+    allChannels = channels; // guardamos todos
+    renderRows(allChannels);
+}
+
+function renderRows(channels) {
+    const container = document.getElementById("channel-rows");
+    container.innerHTML = "";
+
+    const grouped = channels.reduce((acc, canal) => {
+        if (!acc[canal.group]) acc[canal.group] = [];
+        acc[canal.group].push(canal);
+        return acc;
+    }, {});
+
+    for (const [categoria, lista] of Object.entries(grouped)) {
+        const rowId = "row-" + categoria.replace(/\s+/g, "-");
+
+        const row = document.createElement("div");
+        row.innerHTML = `
+            <h4 style="color:#eee; margin:10px 0;">${categoria}</h4>
+            <div class="carousel-wrapper">
+                <button class="nav-btn left" onclick="scrollRow('${rowId}', -1)">&#10094;</button>
+                <div id="${rowId}" class="carousel-row">
+                    ${lista.map(canal => `
+                        <div class="carousel-item" onmouseenter="hoverChannel(this,'${canal.url}')" onmouseleave="stopHover(this)" onclick="playChannel('${canal.url}')">
+                            <img loading="lazy" src="${canal.logo}" alt="${canal.name}">
+                            <div class="preview">
+                                <p>${canal.name}</p>
+                                <p style="font-size:0.75rem; color:#aaa;">${categoria}</p>
+                            </div>
+                        </div>
+                    `).join("")}
+                </div>
+                <button class="nav-btn right" onclick="scrollRow('${rowId}', 1)">&#10095;</button>
+            </div>
+        `;
+        container.appendChild(row);
+    }
+}
+
+function scrollRow(rowId, direction) {
+    const row = document.getElementById(rowId);
+    const scrollAmount = 250;
+    row.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+}
+
+function playChannel(url) {
+    const video = document.getElementById("video");
+    if (hls) hls.destroy();
+    if (Hls.isSupported()) {
+        hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(video);
+    } else {
+        video.src = url;
+    }
+    video.play();
+}
+
+// Mini autoplay en hover
+function hoverChannel(item, url) {
+    if(item.querySelector('video')) return;
+    const vid = document.createElement('video');
+    vid.src = url;
+    vid.className = 'mini';
+    vid.autoplay = true;
+    vid.muted = true;
+    vid.loop = true;
+    item.appendChild(vid);
+}
+function stopHover(item) {
+    const vid = item.querySelector('video');
+    if(vid) vid.remove();
+}
+
+// 🔎 Filtro de canales
+function filterChannels(query) {
+    query = query.toLowerCase();
+    const filtered = allChannels.filter(canal => 
+        canal.name.toLowerCase().includes(query) || 
+        canal.group.toLowerCase().includes(query)
+    );
+    renderRows(filtered);
+}
+
+// activar buscador
+document.getElementById("search").addEventListener("input", e => {
+    filterChannels(e.target.value);
+});
+
+loadM3U();
+</script>
+</body>
+  </html>
