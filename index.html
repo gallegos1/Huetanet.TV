@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Huetanet</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #0077ff, #00d4ff);
+      color: #fff;
+      text-align: center;
+    }
+    header {
+      background: rgba(0,0,0,0.4);
+      padding: 20px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5em;
+    }
+    main {
+      padding: 40px 20px;
+    }
+    main h2 {
+      font-size: 1.8em;
+      margin-bottom: 10px;
+    }
+    main p {
+      font-size: 1.1em;
+      max-width: 600px;
+      margin: 10px auto;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 25px;
+      font-size: 1em;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #fff;
+      color: #0077ff;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #00d4ff;
+      color: #fff;
+    }
+    footer {
+      margin-top: 40px;
+      padding: 15px;
+      font-size: 0.9em;
+      background: rgba(0,0,0,0.4);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌐 Bienvenido a Huetanet</h1>
+  </header>
+  <main>
+    <h2>Tu página en GitHub Pages está lista 🚀</h2>
+    <p>
+      Esta es una página de prueba creada para confirmar que tu
+      configuración de GitHub Pages funciona correctamente.
+    </p>
+    <button onclick="mostrarMensaje()">Haz clic aquí</button>
+    <p id="mensaje"></p>
+  </main>
+  <footer>
+    &copy; 2025 Huetanet - Creado con ❤️ en GitHub Pages
+  </footer>
+  <script>
+    function mostrarMensaje() {
+      document.getElementById("mensaje").innerText =
+        "¡Felicidades! Tu primera página ya funciona ✅";
+    }
+  </script>
+</body>
+  </html>
